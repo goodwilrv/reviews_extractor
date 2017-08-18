@@ -1,3 +1,6 @@
+
+
+
 # -*- coding: utf-8 -*-
 """
 Created on Sun Aug 13 22:24:50 2017
@@ -25,6 +28,8 @@ and they lived at the bottom of a well.</p>
 import requests
 import pandas as pd
 from bs4 import BeautifulSoup
+import time
+from selenium import webdriver
 
 
 uber_url = "https://play.google.com/store/apps/details?id=com.ubercab&hl=en";
@@ -33,18 +38,40 @@ meru_url = "https://play.google.com/store/apps/details?id=com.winit.merucab&hl=e
 
 url_list = [uber_url,ola_url,meru_url];
 appName_list = ["Uber","OlaCabs","Meru Cabs"];
+driver = webdriver.Chrome();
                
 review_df = pd.DataFrame();
 for index, url in enumerate(url_list):
-    response = requests.get(url);
-    item_url_html = response.content;
-    item_soup = BeautifulSoup(item_url_html);
-    review_list = item_soup.findAll('div', attrs={'class':'review-text'})
-    item_text_List = [];                      
-    for item in review_list:
-        item_text_List.append(item.get_text());
-    se=pd.Series(item_text_List);
-    review_df[appName_list[index]] = se;
+    driver.get(url);
+    time.sleep(5);
+    item_text_List = [];
+    for i in range(1,10):
+        print("Click the button to expand reviews");
+       ## buttonToClick = driver.find_element_by_xpath('play-button');
+        driver.execute_script("window.scrollTo(0, 1100);")
+        time.sleep(4);
+        buttonToClick = driver.find_element_by_xpath("//div[@class='button-image'][(ancestor::button[@class='expand-button expand-next'])][(ancestor::div[@class='details-section reviews'])]");
+        #driver.manage().timeouts().implicitly Wait(10, TimeUnit.SECONDS);
+        #driver.implicitly_wait(10);
+        ##time.sleep(4);
+        print("Extracting the review ::===>>> buttonToClick ",buttonToClick);
+        action = webdriver.ActionChains(driver);
+        print("Extracting the review ::===>>> move to element ",buttonToClick);
+        action.move_to_element(buttonToClick)
+        action.perform()
+        print("Extracting the review ::===>>> Just before clicking ",buttonToClick);
+        buttonToClick.click();
+        time.sleep(5);
+        
+        item_html= driver.find_element_by_class_name('review-text');
+        item_soup = BeautifulSoup(item_html);
+        review_list = item_soup.findAll('div', attrs={'class':'review-text'})
+        for item in review_list:
+            item_text_List.append(item.get_text());
+        se=pd.Series(item_text_List);
+        review_df[appName_list[index]] = se;
+    
+    
              
 review_df.to_csv("CabApp_reviews_df.csv");         
 
