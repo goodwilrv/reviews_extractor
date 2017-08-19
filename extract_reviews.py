@@ -1,25 +1,9 @@
-
-
-
 # -*- coding: utf-8 -*-
 """
 Created on Sun Aug 13 22:24:50 2017
 
 @author: gautam
 
-"""
-html_doc = """
-<html><head><title>The Dormouse's story</title></head>
-<body>
-<p class="title"><b>The Dormouse's story</b></p>
-
-<p class="story">Once upon a time there were three little sisters; and their names were
-<a href="http://example.com/elsie" class="sister" id="link1">Elsie</a>,
-<a href="http://example.com/lacie" class="sister" id="link2">Lacie</a> and
-<a href="http://example.com/tillie" class="sister" id="link3">Tillie</a>;
-and they lived at the bottom of a well.</p>
-
-<p class="story">...</p>
 """
 
 ## Extract and store , reviews of 3 Cab App's reviews Uber, Ola and Meru Cabs  
@@ -45,54 +29,55 @@ for index, url in enumerate(url_list):
     driver.get(url);
     time.sleep(5);
     item_text_List = [];
-    for i in range(1,10):
-        print("Click the button to expand reviews");
-       ## buttonToClick = driver.find_element_by_xpath('play-button');
-        driver.execute_script("window.scrollTo(0, 1100);")
-        time.sleep(4);
-        buttonToClick = driver.find_element_by_xpath("//div[@class='button-image'][(ancestor::button[@class='expand-button expand-next'])][(ancestor::div[@class='details-section reviews'])]");
-        #driver.manage().timeouts().implicitly Wait(10, TimeUnit.SECONDS);
-        #driver.implicitly_wait(10);
-        ##time.sleep(4);
-        print("Extracting the review ::===>>> buttonToClick ",buttonToClick);
+
+    driver.execute_script("window.scrollTo(0, 1100);")
+    time.sleep(3);
+    buttonToClick = driver.find_element_by_xpath("//div[@class='button-image'][(ancestor::button[@class='expand-button expand-next'])][(ancestor::div[@class='details-section reviews'])]");
+   ## print("Extracting the review ::===>>> buttonToClick ",buttonToClick);
+    action = webdriver.ActionChains(driver);
+  ##  print("Extracting the review ::===>>> move to element ",buttonToClick);
+    action.move_to_element(buttonToClick)
+    action.perform()
+  ##  print("Extracting the review ::===>>> Just before clicking ",buttonToClick);
+    buttonToClick.click();
+    time.sleep(2);
+                                                
+                                                
+    for i in range(1,200):
+        print("Extracting the review ::===>>> No. of iteration ",i);
+        expandbuttonToClick = driver.find_element_by_xpath("//div[@class='button-image'][(ancestor::button[@class='expand-button expand-next'])][(ancestor::div[@class='details-section reviews'])]");
+       ## print("Extracting the review Inside loop ::===>>> buttonToClick ",expandbuttonToClick);
         action = webdriver.ActionChains(driver);
-        print("Extracting the review ::===>>> move to element ",buttonToClick);
-        action.move_to_element(buttonToClick)
+      ##  print("Extracting the review Inside loop::===>>> move to element ",expandbuttonToClick);
+        action.move_to_element(expandbuttonToClick)
         action.perform()
-        print("Extracting the review ::===>>> Just before clicking ",buttonToClick);
-        buttonToClick.click();
-        time.sleep(5);
+      ##  print("Extracting the review Inside loop::===>>> Just before clicking ",expandbuttonToClick);
+        expandbuttonToClick.click();
+        time.sleep(2);
         
-        item_html= driver.find_element_by_class_name('review-text');
-        item_soup = BeautifulSoup(item_html);
-        review_list = item_soup.findAll('div', attrs={'class':'review-text'})
-        for item in review_list:
-            item_text_List.append(item.get_text());
-        se=pd.Series(item_text_List);
-        review_df[appName_list[index]] = se;
+        
+        items_html= driver.find_elements_by_class_name('review-text');
+       # print("Extracting the review ::===>>> item_html ",item_html);
+        for item in items_html:
+            content = item.get_attribute('outerHTML');
+            soup = BeautifulSoup(content, "html.parser");
+            review = soup.find('div',class_='review-text').get_text()
+            item_text_List.append(review);
+        
+        
+       ## review_list = item_soup.findAll('div', attrs={'class':'review-text'})
+        time.sleep(2);
+                  
+    print("Extracting the review ::===>>> item_text_List ",item_text_List);
+         
+    se=pd.Series(item_text_List);
+    review_df[appName_list[index]] = se;
+    print("Extracting the review ::===>>> review_df ",review_df.count());
     
     
              
 review_df.to_csv("CabApp_reviews_df.csv");         
 
-    
-        
-    
-
-
-
-
-#print(uber_soup.title.string)
-
-
  
-
-                         
-#uber_df = pd.DataFrame(uber_text_List);
-#uber_df.columns = ['uber']
-
-#uber_df.to_csv("Uber_reviews.csv");
-    
-#print(review_list[0].get_text())
 
 
